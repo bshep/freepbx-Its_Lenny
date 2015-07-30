@@ -82,7 +82,7 @@ function itslenny_hookGet_config($engine) {
 					$ext->add($id, $c, '', new ext_noop('Blacklisting caller in: '.$id));
 					$ext->add($id, $c, '', new ext_set('lastcaller','${CALLERID(num)}'));
 					$ext->add($id, $c, '', new ext_gotoif('$[ $[ "${lastcaller}" = "" ] | $[ "${lastcaller}" = "unknown" ] ]', 'noinfo'));
-					$ext->add($id, $c, '', new ext_set('DB(blacklist/${lastcaller})','"Blacklisted by: '.$id.'"'));
+					$ext->add($id, $c, '', new ext_set('DB(blacklist/${lastcaller})','${CALLERID(name)} - Blacklisted by: '.$id.''));
 					$ext->add($id, $c, 'noinfo', new ext_noop('Unidentified Caller'));
 				}
 
