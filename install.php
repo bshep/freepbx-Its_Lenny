@@ -32,6 +32,8 @@ $cols['destination'] = "varchar(100) default NULL";
 $cols['description'] = "varchar(100) default NULL";
 $cols['silence'] = "INTEGER default NULL";
 $cols['itterations'] = "INTEGER default NULL";
+$cols['extension'] = "INTEGER default NULL";
+$cols['blacklist'] = "varchar(10) default NULL";
 
 // create a table if none present and populate with single temp column
 $sql = "CREATE TABLE IF NOT EXISTS $tablename (id INTEGER );";

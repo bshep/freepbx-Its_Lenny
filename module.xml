@@ -1,16 +1,18 @@
 <module>
 	<rawname>itslenny</rawname>
 	<name>Its Lenny</name>
-	<version>0.0.1</version>
+	<version>0.0.3</version>
 	<publisher>POSSA</publisher>
 	<license>GPLv2+</license>
-	<category>Other</category>
+	<category>Applications</category>
 	<menuitems>
 		<itslenny>Its Lenny</itslenny>
 	</menuitems>
 	<changelog>
+		*0.0.3*  Added missing Lenny16 which is the ducks, also has a rickroll option ( would need manual editing at this time )
+		*0.0.2*  Added destination in dialplan
 		*0.0.1*  Initial fork from the Lenny BLacklist Mod
-		</changelog>
+	</changelog>
 	<depends>
 		<version>ge 2.10</version>
 		<module>blacklist</module>

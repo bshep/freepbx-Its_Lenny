@@ -34,6 +34,8 @@ function itslenny_edit($id,$post){
 	$var3 = $db->escapeSimple($post['destination']);
 	$var4 = $db->escapeSimple($post['silence']);
 	$var5 = $db->escapeSimple($post['itterations']);
+	$var6 = $db->escapeSimple($post['blacklist']);
+	$var7 = $db->escapeSimple($post['extension']);
 
 	$results = sql("
 		UPDATE itslenny 
@@ -42,7 +44,9 @@ function itslenny_edit($id,$post){
 			record = '$var2', 
 			destination = '$var3',
 			silence = '$var4',
-			itterations = '$var5'
+			itterations = '$var5',
+			blacklist = '$var6',
+			extension = '$var7'
 		WHERE id = '$id'");
 
 		needreload();
@@ -63,43 +67,68 @@ function itslenny_hookGet_config($engine) {
 				if ($config[0]['record']=='CHECKED') {
 					$ext->splice($context, $exten, 4, new ext_gosub('1', 's', 'sub-record-check', 'rg,s,always'));
 				}
-				$ext->splice($context, $exten, 5, new ext_goto('1', 's', 'app-nv-itslenny'));
+				$ext->splice($context, $exten, 5, new ext_goto('1', 's', 'app-itslenny'));
 				$ext->splice($context, $exten, 6, new ext_hangup);
 			}
+		
+			// Destination so we can trasnfer calls to lenny from an active call	
 			
-			$id = "app-nv-itslenny";
+			if ($config[0]['extension'] != '' and $config[0]['extension'] != '0') {
+				$id = "app-itslenny-dest";
+				$c = $config[0]['extension'];
+
+				$ext->addInclude('from-internal-additional', $id);
+				if ($config[0]['blacklist']=='CHECKED') {
+					$ext->add($id, $c, '', new ext_noop('Blacklisting caller in: '.$id));
+					$ext->add($id, $c, '', new ext_set('lastcaller','${CALLERID(num)}'));
+					$ext->add($id, $c, '', new ext_gotoif('$[ $[ "${lastcaller}" = "" ] | $[ "${lastcaller}" = "unknown" ] ]', 'noinfo'));
+					$ext->add($id, $c, '', new ext_set('DB(blacklist/${lastcaller})','"Blacklisted by: '.$id.'"'));
+					$ext->add($id, $c, 'noinfo', new ext_noop('Unidentified Caller'));
+				}
+
+				if ($config[0]['record']=='CHECKED') {
+					$ext->add($id, $c, '', new ext_gosub('1', 's', 'sub-record-check', 'rg,s,always'));
+				}
+				$ext->add($id, $c, '', new ext_goto('1','s', 'app-itslenny'));
+			}
+
+			$id = "app-itslenny";
 			$c = "s";
 			$config = itslenny_config();
 			$silence = $config[0]['silence'];
 			$itterations = $config[0]['itterations'];
 			
 			$ext->addInclude('from-internal-additional', $id);
-			$ext->add($id, $c, '', new ext_answer(''));
+			$ext->add($id, $c, 'begin', new ext_answer(''));
+			$ext->add($id, $c, '', new ext_set('CDR(userfield)','"ItsLenny!"'));
 			if ($config[0]['record']=='CHECKED') {
-				$ext->add($id, $c, '', new ext_playback('en/this-call-may-be-monitored-or-recorded'));
+				//$ext->add($id, $c, '', new ext_playback('en/this-call-may-be-monitored-or-recorded'));
 			}
-			$ext->add($id, $c, '', new ext_gosub('playitonce','','','Lenny01'));
-			$ext->add($id, $c, '', new ext_gosub('playitonce','','','Lenny02'));
-			$ext->add($id, $c, '', new ext_gosub('playitonce','','','Lenny03'));
-			$ext->add($id, $c, '', new ext_gosub('playitonce','','','Lenny04'));
-			$ext->add($id, $c, '', new ext_gosub('playitonce','','','Lenny05'));
-			$ext->add($id, $c, '', new ext_gosub('playitonce','','','Lenny06'));
-			$ext->add($id, $c, '', new ext_gosub('playitonce','','','Lenny07'));
-			$ext->add($id, $c, '', new ext_gosub('playitonce','','','Lenny08'));
-			$ext->add($id, $c, '', new ext_gosub('playitonce','','','Lenny09'));
-			$ext->add($id, $c, '', new ext_gosub('playitonce','','','Lenny10'));
-			$ext->add($id, $c, '', new ext_gosub('playitonce','','','Lenny11'));
-			$ext->add($id, $c, '', new ext_gosub('playitonce','','','Lenny12'));
-			$ext->add($id, $c, '', new ext_gosub('playitonce','','','Lenny13'));
-			$ext->add($id, $c, '', new ext_gosub('playitonce','','','Lenny14'));
-			$ext->add($id, $c, '', new ext_gosub('playitonce','','','Lenny15'));
-			$ext->add($id, $c, '', new ext_gosub('playitonce','','','Lenny02'));
-			$ext->add($id, $c, '', new ext_gosub('playitonce','','','Lenny03'));
-			$ext->add($id, $c, '', new ext_gosub('playitonce','','','Lenny06'));
-			$ext->add($id, $c, '', new ext_gosub('playitonce','','','Lenny08'));
-			$ext->add($id, $c, '', new ext_gosub('playitonce','','','Lenny09'));
-			$ext->add($id, $c, '', new ext_gosub('playitonce','','','Lenny10'));
-			$ext->add($id, $c, '', new ext_gosub('playitonce','','','Lenny14'));
+			$ext->add($id, $c, '', new ext_gosub('playitonce','','','Lenny01')); // Hello this is lenny
+			$ext->add($id, $c, '', new ext_gosub('playitonce','','','Lenny02')); // Sorry I can barely hear you thereY
+			$ext->add($id, $c, '', new ext_gosub('playitonce','','','Lenny03')); // Yes, yes, yes...
+			$ext->add($id, $c, '', new ext_gosub('playitonce','','','Lenny04')); // Oh good, yes, yes, yes
+			$ext->add($id, $c, '', new ext_gosub('playitonce','','','Lenny05')); // Yes, yes, some did call last week, was that you?
+			$ext->add($id, $c, '', new ext_gosub('playitonce','','','Lenny06')); // Sorry what was your name again
+			$ext->add($id, $c, '', new ext_gosub('playitonce','','','Lenny07')); // Well its funny you should call, 3rd eldest larissa...
+			$ext->add($id, $c, '', new ext_gosub('playitonce','','','Lenny08')); // I'm sorry I couldnt quite cath you there, what was that again
+			$ext->add($id, $c, '', new ext_gosub('playitonce','','','Lenny09')); // Sorry, again...
+			$ext->add($id, $c, '', new ext_gosub('playitonce','','','Lenny10')); // Would you say that again please
+			$ext->add($id, $c, '', new ext_gosub('playitonce','','','Lenny11')); // Yes, yes, yes
+			$ext->add($id, $c, '', new ext_gosub('playitonce','','','Lenny12')); // Sorry which company did you say you were calling from again?
+			$ext->add($id, $c, '', new ext_gosub('playitonce','','','Lenny13')); // Last time I went for and got in trouble
+			$ext->add($id, $c, '', new ext_gosub('playitonce','','','Lenny14')); // Since you put it that way, youve been friendly, hello... hello are you there, sorry bad connection
+			$ext->add($id, $c, '', new ext_gosub('playitonce','','','Lenny15')); // With the world finance as they are, how is this going to work
+			$ext->add($id, $c, '', new ext_gosub('playitonce','','','Lenny16')); // ducks
+			$ext->add($id, $c, '', new ext_gosub('playitonce','','','Lenny02')); // Sorry I can barely hear you there
+			$ext->add($id, $c, '', new ext_gosub('playitonce','','','Lenny03')); // Yes, yes, yes...
+			$ext->add($id, $c, '', new ext_gosub('playitonce','','','Lenny06')); // Sorry what was your name again
+			$ext->add($id, $c, '', new ext_gosub('playitonce','','','Lenny08')); // I'm sorry I couldnt quite cath you there, what was that again
+			$ext->add($id, $c, '', new ext_gosub('playitonce','','','Lenny09')); // Sorry, again...
+			$ext->add($id, $c, '', new ext_gosub('playitonce','','','Lenny10')); // Would you say that again please
+			$ext->add($id, $c, '', new ext_gosub('playitonce','','','Lenny14')); // Since you put it that way, youve been friendly, hello... hello are you there, sorry bad connection
+			$ext->add($id, $c, '', new ext_playback('en/tt-somethingwrong'));
+			$ext->add($id, $c, '', new ext_playback('en/tt-monkeysintro'));
 			$ext->add($id, $c, '', new ext_playback('en/tt-monkeys'));
 			$ext->add($id, $c, '', new ext_hangup);
 

@@ -66,11 +66,17 @@ $html .= "</tr><tr>";
 $html .= "<td><a href='#' class='info'>Enable Recording<span>If enabled, the call is recorded locally and a notice is streamed to callers that they are being recorded.</span></a></td>";
 $html .= "<td><input type='checkbox' name='record' value='CHECKED' ".$config[0]['record']."></td>";
 $html .= "</tr><tr>";
+$html .= "<td><a href='#' class='info'>Enable Blacklisting<span>If enabled, the call is added to the blacklist.</span></a></td>";
+$html .= "<td><input type='checkbox' name='blacklist' value='CHECKED' ".$config[0]['blacklist']."></td>";
+$html .= "</tr><tr>";
 $html .= "<td><a href='#' class='info'>Silence Detection Delay<span>Default = 1500, this value in milliseconds is how how much silence must elapse before it is considered a gap.</span></a></td>";
 $html .= "<td><input type='text' name='silence' size=10 value='".htmlspecialchars(isset($config[0]['silence']) ? $config[0]['silence'] : '')."' ></td>";
 $html .= "</tr><tr>";
 $html .= "<td><a href='#' class='info'>Silence Detection Itterations<span>Default = 1, this is how many silence gaps must elapse before Lenny responds.</span></a></td>";
 $html .= "<td><input type='text' name='itterations' size=10 value='".htmlspecialchars(isset($config[0]['itterations']) ? $config[0]['itterations'] : '')."' ></td>";
+$html .= "</tr><tr>";
+$html .= "<td><a href='#' class='info'>Destination<span>Default = 66, This is the extension you can transfer callers to and have lenny speak to them. Ex: dial ##66# to blind transfer to lenny (be sure to enable blind transfer in features config</span></a></td>";
+$html .= "<td><input class='extdisplay' type='text' name='extension' size=10 value='".htmlspecialchars(isset($config[0]['extension']) ? $config[0]['extension'] : '')."' ></td>";
 $html .= "</tr>";
 $html .= "</table>";
 
